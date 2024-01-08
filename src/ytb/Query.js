@@ -51,6 +51,8 @@ class Query {
       args.push(this.environment.settings.cookiePath);
     } else if (this.environment.settings.authentication !== null) {
       //Add authentication arguments if enabled
+      // https://github.com/yt-dlp/yt-dlp/issues/7328
+      console.log('auth with', this.environment.settings.authentication);
       args.push('--username');
       args.push(this.environment.settings.authentication.username);
       args.push('--password');

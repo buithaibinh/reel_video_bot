@@ -204,7 +204,7 @@ const run = async () => {
 
   const videos = await scraper.start();
 
-  for (const video of videos.splice(0, 1)) {
+  for (const video of videos.splice(0, 10)) {
     await processTask(video);
     // sleep 10s avoid rate limit
     logger.info('Sleep 10s. If not, Instagram will block us :(');

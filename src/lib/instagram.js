@@ -177,3 +177,15 @@ export const generateLongLivedAccessToken = async ({
   // const longLivedToken = response.data.access_token;
   return response.data;
 };
+
+export const getInstagramPosts = async (accessToken, userId) => {
+  const response = await axios.get(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${userId}/media`,
+    {
+      params: {
+        access_token: accessToken,
+      },
+    }
+  );
+  return response.data;
+}
