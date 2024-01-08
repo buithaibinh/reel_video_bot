@@ -126,31 +126,31 @@ const processTask = async (video) => {
     logger.info('Downloaded video successfully', path);
 
     // 2. upload video to server
-    // const urlOnServer = await uploadVideoToServer(path);
-    // logger.info('Uploaded video to server successfully', urlOnServer);
+    const urlOnServer = await uploadVideoToServer(path);
+    logger.info('Uploaded video to server successfully', urlOnServer);
 
-    // // 3. delete video on local,
-    // fs.unlinkSync(path);
+    // 3. delete video on local,
+    fs.unlinkSync(path);
 
-    // const { creationId, permalink: instagramUrl } = await postInstagramReel({
-    //   accessToken: instagramAccessToken,
-    //   pageId: instagramPageId,
-    //   description: 'This is the best real ever #Reels4Real #Reels',
-    //   videoUrl: urlOnServer,
-    // }).catch((error) => {
-    //   logger.error('Error when publish video to instagram', error);
-    //   throw new Error('Publish video to instagram failed:' + error.message);
-    // });
+    const { creationId, permalink: instagramUrl } = await postInstagramReel({
+      accessToken: instagramAccessToken,
+      pageId: instagramPageId,
+      description: 'This is the best real ever #Reels4Real #Reels',
+      videoUrl: urlOnServer,
+    }).catch((error) => {
+      logger.error('Error when publish video to instagram', error);
+      throw new Error('Publish video to instagram failed:' + error.message);
+    });
 
-    // // 5. update video status to db
-    // await db.update(({ videos }) => {
-    //   const video = videos.find((item) => item.videoId === videoId);
-    //   video.status = 'done';
-    //   video.instagramUrl = instagramUrl;
-    //   video.urlOnServer = urlOnServer;
-    //   video.error = '';
-    //   video.updatedAt = new Date().toISOString();
-    // });
+    // 5. update video status to db
+    await db.update(({ videos }) => {
+      const video = videos.find((item) => item.videoId === videoId);
+      video.status = 'done';
+      video.instagramUrl = instagramUrl;
+      video.urlOnServer = urlOnServer;
+      video.error = '';
+      video.updatedAt = new Date().toISOString();
+    });
   } catch (error) {
     logger.error('Error when processing task', error);
 
@@ -175,32 +175,32 @@ const run = async () => {
   // get long lived token from db
   const instagram = db.data.instagram || {};
   const { accessToken } = instagram;
-  if (accessToken) {
-    console.log('=== Got long lived token from db ===');
-    instagramAccessToken = accessToken;
-  } else {
-    logger.info('=== Generate long lived token based on short lived token ===');
-    const res = await generateLongLivedAccessToken({
-      accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
-      appId: process.env.FACEBOOK_APP_ID,
-      appSecret: process.env.FACEBOOK_APP_SECRET,
-    });
+  // if (accessToken) {
+  //   console.log('=== Got long lived token from db ===');
+  //   instagramAccessToken = accessToken;
+  // } else {
+  logger.info('=== Generate long lived token based on short lived token ===');
+  const res = await generateLongLivedAccessToken({
+    accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
+    appId: process.env.FACEBOOK_APP_ID,
+    appSecret: process.env.FACEBOOK_APP_SECRET,
+  });
 
-    logger.info('Got long lived token successfully', res);
-    const { access_token, expires_in } = res || {};
-    instagramAccessToken = access_token;
-    // get instagram page id and save to db
-    instagramPageId = process.env.INSTAGRAM_PAGE_ID;
-    logger.info('Got instagram page id successfully', instagramPageId);
+  logger.info('Got long lived token successfully', res);
+  const { access_token, expires_in } = res || {};
+  instagramAccessToken = access_token;
+  // get instagram page id and save to db
+  instagramPageId = process.env.INSTAGRAM_PAGE_ID;
+  logger.info('Got instagram page id successfully', instagramPageId);
 
-    // save long lived token and instagram page id to db
-    // in the next time, we will use this token to publish video to instagram
-    await db.update(({ instagram = {} }) => {
-      instagram.accessToken = instagramAccessToken;
-      instagram.expiresIn = expires_in;
-      instagram.pageId = instagramPageId;
-    });
-  }
+  // save long lived token and instagram page id to db
+  // in the next time, we will use this token to publish video to instagram
+  await db.update(({ instagram = {} }) => {
+    instagram.accessToken = instagramAccessToken;
+    instagram.expiresIn = expires_in;
+    instagram.pageId = instagramPageId;
+  });
+  // }
 
   const videos = await scraper.start();
 
