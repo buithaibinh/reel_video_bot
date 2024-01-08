@@ -38,3 +38,7 @@ You need create a instagram pageId and get the access token.
 2. Copy the content of `.env.example` to `.env` and fill the values. You can get the values from the pre-requirements section. Instagram access token and pageId are required if you want to post the reels videos to your instagram account.
 4. Use chrome to open the instagram and login your account. This will help `yt-dlp` can re-use the cookies to download the private videos.
 5. Run `yarn start` to start the script.
+
+## run on Mac OS
+
+If you are using Mac OS, you can quickly run the script by running `./start.sh` command. It will install the dependencies and start the script.
