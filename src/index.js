@@ -130,7 +130,7 @@ const processTask = async (video) => {
     logger.info('Uploaded video to server successfully', urlOnServer);
 
     // 3. delete video on local,
-    fs.unlinkSync(path);
+    // fs.unlinkSync(path);
 
     const { creationId, permalink: instagramUrl } = await postInstagramReel({
       accessToken: instagramAccessToken,
