@@ -1,0 +1,6 @@
+logs
+node_modules
+videos/*.mp4
+storage
+db.json
+.env
