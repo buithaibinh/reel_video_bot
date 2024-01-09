@@ -57,7 +57,7 @@ class Query {
       args.push(this.environment.settings.authentication.username);
       args.push('--password');
       args.push(this.environment.settings.authentication.password);
-    } else {
+    } else if(this.environment.settings.cookieBrowser) {
       //Add cookie arguments if enabled
       args.push('--cookies-from-browser');
       args.push(this.environment.settings.cookieBrowser);
