@@ -55,6 +55,9 @@ If you are using Mac OS, you can quickly run the script by running `./start.sh` 
    ```
 3. Save the file and exit.
 4. Run `crontab -l` to check the cron jobs.
+5. Run `crontab -r` to remove all the cron jobs.
+6. Run `crontab -l` to check the cron jobs again. You should see nothing.
+7. Run `crontab -e` to edit the cron jobs again.
 
 ### Windows
 
