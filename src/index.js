@@ -7,6 +7,7 @@ import { uploadFileToS3, getSignedDownloadUrl } from './lib/s3.js';
 import { createLogger } from './logger.js';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
+import cron from 'node-cron';
 
 import { InstagramReelScrapper } from './video_scraper/instagram.js';
 import {
@@ -172,35 +173,6 @@ const run = async () => {
   logger.info('=== START ===');
   const apiURL = process.env.APIFY_INSTAGRAM_REEL_URL;
   const scraper = new InstagramReelScrapper([apiURL]);
-  // get long lived token from db
-  // const instagram = db.data.instagram || {};
-  // const { accessToken } = instagram;
-  // if (accessToken) {
-  //   console.log('=== Got long lived token from db ===');
-  //   instagramAccessToken = accessToken;
-  // } else {
-  //   logger.info('=== Generate long lived token based on short lived token ===');
-  //   const res = await generateLongLivedAccessToken({
-  //     accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
-  //     appId: process.env.FACEBOOK_APP_ID,
-  //     appSecret: process.env.FACEBOOK_APP_SECRET,
-  //   });
-
-  //   logger.info('Got long lived token successfully', res);
-  //   const { nonExpiringToken, longTermToken, userId } = res || {};
-  //   instagramAccessToken = nonExpiringToken;
-  //   // get instagram page id and save to db
-  //   instagramPageId = process.env.INSTAGRAM_PAGE_ID;
-  //   logger.info('Got instagram page id successfully', instagramPageId);
-
-  //   // save long lived token and instagram page id to db
-  //   // in the next time, we will use this token to publish video to instagram
-  //   await db.update(({ instagram = {} }) => {
-  //     instagram.accessToken = instagramAccessToken;
-  //     instagram.pageId = instagramPageId;
-  //   });
-  // }
-
   const videos = await scraper.start();
 
   for (const video of videos.splice(0)) {
@@ -210,12 +182,8 @@ const run = async () => {
     await new Promise((resolve) => setTimeout(resolve, 10000));
   }
   logger.info('=== END ===');
-
-  // limiter.schedule(() => {
-  //   // TODO, for testing, we only process 1 video
-  //   const allTasks = videos.map((video) => processTask(video));
-  //   return Promise.allSettled(allTasks);
-  // });
 };
 
-run();
+// schedule task to run every 8 hours
+cron.schedule('0 0 */8 * *', run);
+
