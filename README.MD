@@ -42,3 +42,33 @@ You need create a instagram pageId and get the access token.
 ## run on Mac OS
 
 If you are using Mac OS, you can quickly run the script by running `./start.sh` command. It will install the dependencies and start the script.
+
+
+## How to run the script in the background automatically (Optional)
+
+### Linux
+
+1. Run `crontab -e` to edit the cron jobs.
+2. Add the following line to the end of the file. Replace the path with your own path.
+   ```
+   0 */8 * * * cd /path/to/reel_video_bot && yarn start
+   ```
+3. Save the file and exit.
+4. Run `crontab -l` to check the cron jobs.
+
+### Windows
+
+1. Open the Task Scheduler.
+2. Click `Create Task` on the right side.
+3. Enter the name and description.
+4. Click `Triggers` tab and click `New...` button.
+5. Select `Daily` and set the time.
+6. Click `Actions` tab and click `New...` button.
+7. Enter the path of `start.bat` file in the `Program/script` field.
+8. Enter the path of the root directory of this repo in the `Start in (optional)` field.
+9. Click `OK` button to save the task.
+10. Click `OK` button to exit the Task Scheduler.
+11. You can find the task in the `Task Scheduler Library` folder.
+12. Right click the task and click `Run` to run the task immediately.
+13. You can check the task history in the `History` tab.
+14. You can check the task log in the `History` tab. Right click the task and click `Properties`. Click `History` tab and double click the log to open the log file.
