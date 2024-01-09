@@ -166,41 +166,40 @@ const processTask = async (video) => {
   }
 };
 
-let instagramAccessToken = null;
-let instagramPageId = null;
+let instagramAccessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+let instagramPageId = process.env.INSTAGRAM_PAGE_ID;
 const run = async () => {
   logger.info('=== START ===');
   const apiURL = process.env.APIFY_INSTAGRAM_REEL_URL;
   const scraper = new InstagramReelScrapper([apiURL]);
   // get long lived token from db
-  const instagram = db.data.instagram || {};
-  const { accessToken } = instagram;
-  if (accessToken) {
-    console.log('=== Got long lived token from db ===');
-    instagramAccessToken = accessToken;
-  } else {
-    logger.info('=== Generate long lived token based on short lived token ===');
-    const res = await generateLongLivedAccessToken({
-      accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
-      appId: process.env.FACEBOOK_APP_ID,
-      appSecret: process.env.FACEBOOK_APP_SECRET,
-    });
+  // const instagram = db.data.instagram || {};
+  // const { accessToken } = instagram;
+  // if (accessToken) {
+  //   console.log('=== Got long lived token from db ===');
+  //   instagramAccessToken = accessToken;
+  // } else {
+  //   logger.info('=== Generate long lived token based on short lived token ===');
+  //   const res = await generateLongLivedAccessToken({
+  //     accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
+  //     appId: process.env.FACEBOOK_APP_ID,
+  //     appSecret: process.env.FACEBOOK_APP_SECRET,
+  //   });
 
-    logger.info('Got long lived token successfully', res);
-    const { access_token, expires_in } = res || {};
-    instagramAccessToken = access_token;
-    // get instagram page id and save to db
-    instagramPageId = process.env.INSTAGRAM_PAGE_ID;
-    logger.info('Got instagram page id successfully', instagramPageId);
+  //   logger.info('Got long lived token successfully', res);
+  //   const { nonExpiringToken, longTermToken, userId } = res || {};
+  //   instagramAccessToken = nonExpiringToken;
+  //   // get instagram page id and save to db
+  //   instagramPageId = process.env.INSTAGRAM_PAGE_ID;
+  //   logger.info('Got instagram page id successfully', instagramPageId);
 
-    // save long lived token and instagram page id to db
-    // in the next time, we will use this token to publish video to instagram
-    await db.update(({ instagram = {} }) => {
-      instagram.accessToken = instagramAccessToken;
-      instagram.expiresIn = expires_in;
-      instagram.pageId = instagramPageId;
-    });
-  }
+  //   // save long lived token and instagram page id to db
+  //   // in the next time, we will use this token to publish video to instagram
+  //   await db.update(({ instagram = {} }) => {
+  //     instagram.accessToken = instagramAccessToken;
+  //     instagram.pageId = instagramPageId;
+  //   });
+  // }
 
   const videos = await scraper.start();
 

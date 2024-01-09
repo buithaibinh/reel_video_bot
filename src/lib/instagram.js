@@ -148,22 +148,8 @@ export const getInstagramPageId = async (accessToken) => {
   return pageId;
 };
 
-export const generateLongLivedAccessToken = async ({
-  accessToken,
-  appId,
-  appSecret,
-}) => {
-  // const request = new GetUserLongLivedTokenRequest(
-  //   accessToken,
-  //   appId,
-  //   appSecret
-  // );
-  // const response = await request.execute();
-  // console.log('response', response.getData());
-  // const data = response.getData();
-  // return data;
-
-  const response = await axios.get(
+const get60DaysToken = async ({ accessToken, appId, appSecret }) => {
+  const res = await axios.get(
     `https://graph.facebook.com/${GRAPH_API_VERSION}/oauth/access_token`,
     {
       params: {
@@ -174,8 +160,55 @@ export const generateLongLivedAccessToken = async ({
       },
     }
   );
-  // const longLivedToken = response.data.access_token;
-  return response.data;
+
+  const { access_token: longLivedAccessToken } = res.data;
+
+  return longLivedAccessToken;
+};
+
+const getUserId = async (longTermToken) => {
+  const res = await axios.get(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/me`,
+    {
+      params: {
+        access_token: longTermToken,
+      },
+    }
+  );
+
+  const { id: userId } = res.data;
+  return userId;
+};
+
+export const generateLongLivedAccessToken = async ({
+  accessToken,
+  appId,
+  appSecret,
+}) => {
+  // debug token https://developers.facebook.com/tools/debug/accesstoken/
+  // get 2 month token
+  const longTermToken = await get60DaysToken({
+    accessToken,
+    appId,
+    appSecret,
+  });
+
+  // get user id
+  const userId = await getUserId(longTermToken);
+
+  // Get a non-expiring token
+  const res = await axios.get(
+    `https://graph.facebook.com/${GRAPH_API_VERSION}/${userId}/accounts`,
+    {
+      params: {
+        access_token: longTermToken,
+      },
+    }
+  );
+
+  const { data } = res.data;
+  const { access_token: nonExpiringToken } = data[0];
+  return { longTermToken, userId, nonExpiringToken };
 };
 
 export const getInstagramPosts = async (accessToken, userId) => {
@@ -188,4 +221,4 @@ export const getInstagramPosts = async (accessToken, userId) => {
     }
   );
   return response.data;
-}
+};
