@@ -7,7 +7,6 @@ import { uploadFileToS3, getSignedDownloadUrl } from './lib/s3.js';
 import { createLogger } from './logger.js';
 import fs from 'fs';
 import { readFile } from 'fs/promises';
-import cron from 'node-cron';
 
 import { InstagramReelScrapper } from './video_scraper/instagram.js';
 import {
@@ -175,7 +174,7 @@ const run = async () => {
   const scraper = new InstagramReelScrapper([apiURL]);
   const videos = await scraper.start();
 
-  for (const video of videos.splice(0)) {
+  for (const video of videos.splice(0, 1)) {
     await processTask(video);
     // sleep 10s avoid rate limit
     logger.info('Sleep 10s. If not, Instagram will block us :(');
@@ -184,6 +183,5 @@ const run = async () => {
   logger.info('=== END ===');
 };
 
-// schedule task to run every 8 hours
-cron.schedule('0 0 */8 * *', run);
+run();
 
