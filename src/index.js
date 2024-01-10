@@ -80,7 +80,7 @@ const uploadVideoToServer = async (path) => {
 };
 
 const processTask = async (video) => {
-  const { url, videoId } = video;
+  const { url, videoId, caption = '' , hashtags = [], ownerUsername} = video;
   try {
     logger.info('==== START process ====', url);
     // get video info from db
@@ -131,11 +131,12 @@ const processTask = async (video) => {
 
     // 3. delete video on local,
     fs.unlinkSync(path);
+    const description = `${caption}\n\nCredit: @${ownerUsername}\n\n#babybara #capybara #capybaras #capy #capybaralove #capybaralife`;
 
     const { creationId, permalink: instagramUrl } = await postInstagramReel({
       accessToken: instagramAccessToken,
       pageId: instagramPageId,
-      description: 'This is the best real ever #Reels4Real #Reels',
+      description: description,
       videoUrl: urlOnServer,
     }).catch((error) => {
       logger.error('Error when publish video to instagram', error);
