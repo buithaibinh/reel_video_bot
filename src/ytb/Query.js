@@ -1,7 +1,7 @@
 import { execa } from 'execa';
 import UserAgent from 'user-agents';
 
-import Environment from '../config.js';
+import Environment from './Environment.js';
 
 class Query {
   constructor() {

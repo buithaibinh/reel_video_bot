@@ -36,7 +36,10 @@ export class InstagramReelScrapper extends VideoScrapper {
 
     await crawler.run(initializeStartUrls);
 
-    return dataset;
+    return dataset.sort((a, b) => {
+      // sort by timestamp (2023-12-25T15:44:18.000Z format)
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
   }
 
   async stop() {

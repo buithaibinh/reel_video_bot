@@ -9,11 +9,9 @@ import fs from 'fs';
 import { readFile } from 'fs/promises';
 
 import { InstagramReelScrapper } from './video_scraper/instagram.js';
-import {
-  postInstagramReel,
-  generateLongLivedAccessToken,
-} from './lib/instagram.js';
+import { postInstagramReel } from './lib/instagram.js';
 import db from './lib/db.js';
+import config from './config.js';
 
 dotenv.config();
 
@@ -23,6 +21,8 @@ const limiter = new Bottleneck({
   maxConcurrent: 1, // maximum 1 request at a time
   minTime: 333, // maximum 3 requests per second
 });
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * use ytb-dl to download video and save to local
@@ -80,7 +80,7 @@ const uploadVideoToServer = async (path) => {
 };
 
 const processTask = async (video) => {
-  const { url, videoId, caption = '' , hashtags = [], ownerUsername} = video;
+  const { url, videoId, caption = '', hashtags = [], ownerUsername } = video;
   try {
     logger.info('==== START process ====', url);
     // get video info from db
@@ -131,8 +131,11 @@ const processTask = async (video) => {
 
     // 3. delete video on local,
     fs.unlinkSync(path);
-    const description = `${caption}\n\nCredit: @${ownerUsername}\n\n#babybara #capybara #capybaras #capy #capybaralove #capybaralife`;
 
+    //
+    const description = `${caption}\n\nCredit: @${ownerUsername}\n\n${config.hashtags.join(
+      ' '
+    )}`;
     const { creationId, permalink: instagramUrl } = await postInstagramReel({
       accessToken: instagramAccessToken,
       pageId: instagramPageId,
@@ -149,9 +152,20 @@ const processTask = async (video) => {
       video.status = 'done';
       video.instagramUrl = instagramUrl;
       video.urlOnServer = urlOnServer;
+      video.creationId = creationId;
+      video.originalHashtags = hashtags;
+      video.ownerUsername = ownerUsername;
+      video.originalDescription = caption;
+      video.description = description;
+      video.hashtags = config.hashtags;
       video.error = '';
       video.updatedAt = new Date().toISOString();
     });
+
+    // sleep 10s avoid rate limit
+    logger.info('Posted video to instagram successfully', instagramUrl);
+    logger.info('Sleep 10s to avoid rate limit');
+    await sleep(10000);
   } catch (error) {
     logger.error('Error when processing task', error);
 
@@ -175,14 +189,10 @@ const run = async () => {
   const scraper = new InstagramReelScrapper([apiURL]);
   const videos = await scraper.start();
 
-  for (const video of videos.splice(0)) {
+  for (const video of videos.splice(0, config.maxNumberOfVideos)) {
     await processTask(video);
-    // sleep 10s avoid rate limit
-    logger.info('Sleep 10s. If not, Instagram will block us :(');
-    await new Promise((resolve) => setTimeout(resolve, 10000));
   }
   logger.info('=== END ===');
 };
 
 run();
-
