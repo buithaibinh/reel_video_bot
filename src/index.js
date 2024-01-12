@@ -187,9 +187,11 @@ const run = async () => {
   logger.info('=== START ===');
   const apiURL = process.env.APIFY_INSTAGRAM_REEL_URL;
   const scraper = new InstagramReelScrapper([apiURL]);
-  const videos = await scraper.start();
-
-  for (const video of videos.splice(0, config.maxNumberOfVideos)) {
+  let videos = await scraper.start();
+  logger.info('Got total videos from instagram', videos.length);
+  videos = videos.splice(0, config.maxNumberOfVideos)
+  logger.info('Got total videos from instagram after filter', videos.length);
+  for (const video of videos) {
     await processTask(video);
   }
   logger.info('=== END ===');
